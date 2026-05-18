@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Finanțe Personale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: rgba(255,255,255,0.04);
+    --surface-hover: rgba(255,255,255,0.08);
+    --card-bg: #111520;
+    --border: rgba(255,255,255,0.09);
+    --gold: #c9a84c;
+    --gold-light: #e8c96b;
+    --green: #4ecca3;
+    --red: #e05c6a;
+    --yellow: #f5c542;
+    --text: #e8e4dc;
+    --muted: rgba(232,228,220,0.45);
+    --muted-strong: rgba(232,228,220,0.65);
+    --card-radius: 18px;
+    --nav-h: 68px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-bottom: var(--nav-h);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -30%; left: -20%;
+    width: 60%; height: 60%;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%; right: -10%;
+    width: 50%; height: 50%;
+    background: radial-gradient(ellipse, rgba(78,204,163,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ──── BOTTOM NAV ──── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--nav-h);
+    background: rgba(10,13,20,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    z-index: 300;
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--muted);
+    transition: color 0.2s;
+    padding-bottom: 6px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-btn.active { color: var(--gold); }
+  .nav-icon {
+    font-size: 22px;
+    line-height: 1;
+    transition: transform 0.2s;
+  }
+  .nav-btn.active .nav-icon { transform: scale(1.15); }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .nav-divider {
+    width: 1px;
+    background: rgba(255,255,255,0.07);
+    margin: 14px 0;
+  }
+
+  /* ──── SCREENS ──── */
+  .screen { display: none; animation: fadeUp 0.3s ease both; }
+  .screen.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  /* ══════════════════════════════
+     PORTOFEL SCREEN
+  ══════════════════════════════ */
+  .wallet-header {
+    padding: 28px 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--text); font-weight: 400; }
+  .date-badge {
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 30px;
+    letter-spacing: 0.3px;
+  }
+
+  /* Balance card */
+  .balance-section { padding: 20px 24px 0; }
+  .balance-card {
+    background: linear-gradient(135deg, #1a1508 0%, #0f160d 50%, #0d0f1a 100%);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: var(--card-radius);
+    padding: 28px 24px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.5;
+  }
+  .balance-card::after {
+    content: '₿';
+    position: absolute;
+    right: -10px; bottom: -20px;
+    font-size: 8rem;
+    color: rgba(201,168,76,0.04);
+    font-family: serif;
+    user-select: none;
+  }
+  .balance-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .balance-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .balance-amount .currency { font-size: 1.4rem; color: var(--gold); margin-right: 4px; }
+  .balance-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat-pill {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .stat-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .stat-icon.in { background: rgba(78,204,163,0.12); }
+  .stat-icon.out { background: rgba(224,92,106,0.12); }
+  .stat-sub { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat-val { font-size: 0.95rem; font-weight: 500; margin-top: 2px; }
+  .stat-val.in { color: var(--green); }
+  .stat-val.out { color: var(--red); }
+
+  /* Tabs */
+  .wallet-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 18px 24px 0;
+  }
+  .wtab {
+    flex: 1;
+    padding: 9px;
+    border-radius: 11px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .wtab.active {
+    background: var(--gold);
+    color: #0a0d14;
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+
+  /* Views */
+  .wview { display: none; }
+  .wview.active { display: block; }
+
+  .section { padding: 16px 24px; }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-title span { font-size: 0.72rem; color: var(--red); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 400; }
+
+  /* Add form */
+  .add-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 18px;
+    display: none;
+    margin-bottom: 16px;
+  }
+  .add-form.visible { display: block; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .form-group input, .form-group select {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-size: 0.88rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+  .form-group select option { background: #1a1508; color: var(--text); }
+  .w-type-toggle { display: flex; gap: 8px; margin-bottom: 10px; }
+  .w-type-btn {
+    flex: 1; padding: 9px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    transition: all 0.2s;
+    color: var(--muted);
+  }
+  .w-type-btn.income.active { background: rgba(78,204,163,0.15); border-color: var(--green); color: var(--green); }
+  .w-type-btn.expense.active { background: rgba(224,92,106,0.15); border-color: var(--red); color: var(--red); }
+  .btn-add-w {
+    width: 100%;
+    padding: 11px;
+    border-radius: 11px;
+    border: none;
+    background: var(--gold);
+    color: #0a0d14;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    margin-top: 2px;
+    transition: all 0.2s;
+  }
+  .btn-add-w:active { opacity: 0.85; }
+
+  /* Transactions */
+  .transactions-list { display: flex; flex-direction: column; gap: 8px; }
+  .tx-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+    animation: slideIn 0.3s ease both;
+  }
+  .tx-icon {
+    width: 40px; height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .tx-icon.income { background: rgba(78,204,163,0.1); }
+  .tx-icon.expense { background: rgba(224,92,106,0.1); }
+  .tx-info { flex: 1; min-width: 0; }
+  .tx-name { font-size: 0.88rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx-meta { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+  .tx-amount { font-weight: 600; font-size: 0.95rem; flex-shrink: 0; }
+  .tx-amount.income { color: var(--green); }
+  .tx-amount.expense { color: var(--red); }
+  .tx-delete {
+    background: none; border: none;
+    cursor: pointer; color: var(--muted);
+    font-size: 0.82rem; padding: 4px;
+    border-radius: 6px; transition: color 0.2s; flex-shrink: 0;
+  }
+  .tx-delete:active { color: var(--red); }
+
+  .empty-state { text-align: center; padding: 36px 20px; color: var(--muted); }
+  .empty-state .emoji { font-size: 2.2rem; display: block; margin-bottom: 10px; }
+  .empty-state p { font-size: 0.82rem; }
+
+  /* Filter chips */
+  .filter-bar { display: flex; gap: 7px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    padding: 5px 13px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .filter-chip.active { background: rgba(201,168,76,0.15); border-color: var(--gold); color: var(--gold); }
+
+  /* Categories */
+  .categories-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .cat-card-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .cat-name { font-size: 0.78rem; color: var(--muted); }
+  .cat-icon { font-size: 1.1rem; }
+  .cat-amount { font-size: 1rem; font-weight: 600; color: var(--text); }
+  .cat-bar-track { height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-top: 7px; }
+  .cat-bar { height: 100%; border-radius: 2px; background: var(--gold); transition: width 0.6s ease; }
+
+  /* Report */
+  .month-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 18px;
+  }
+  .month-bars { display: flex; gap: 8px; align-items: flex-end; height: 72px; margin: 12px 0 6px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .bar-fill {
+    width: 100%; border-radius: 4px 4px 0 0;
+    background: rgba(201,168,76,0.25);
+    border: 1px solid rgba(201,168,76,0.3);
+    transition: height 0.8s cubic-bezier(0.34,1.56,0.64,1);
+    min-height: 4px;
+  }
+  .bar-fill.current { background: rgba(201,168,76,0.7); border-color: var(--gold); }
+  .bar-label { font-size: 0.62rem; color: var(--muted); }
+  .summary-totals { display: flex; justify-content: space-between; margin-top: 14px; }
+  .summary-item { text-align: center; }
+  .summary-item .val { font-size: 0.95rem; font-weight: 600; }
+  .summary-item .lbl { font-size: 0.65rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
+  .progress-wrap { margin-top: 14px; }
+  .progress-lbl { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--muted); margin-bottom: 5px; }
+  .progress-track { height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; }
+  .progress-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--green), var(--gold)); transition: width 0.8s ease; }
+
+  /* ══════════════════════════════
+     DATORII SCREEN
+  ══════════════════════════════ */
+  .debts-header {
+    padding: 28px 24px 0;
+    position: sticky;
+    top: 0;
+    background: rgba(10,13,20,0.97);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+  }
+  .debts-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: -0.5px;
+    margin-bottom: 14px;
+  }
+  .debts-title span { color: var(--text); font-weight: 400; }
+
+  .debt-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .dsum-box {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+  }
+  .dsum-label { font-size: 8px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; }
+  .dsum-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; }
+  .dsum-val.red { color: var(--red); }
+  .dsum-val.green { color: var(--green); }
+  .dsum-val.yellow { color: var(--yellow); }
+
+  .debt-search-wrap { padding: 0 24px 14px; }
+  .debt-search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 13px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .debt-search:focus { border-color: var(--gold); }
+  .debt-search::placeholder { color: rgba(232,228,220,0.25); }
+
+  /* Person cards */
+  .persons-list { padding: 0 24px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .person-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .person-card.expanded { border-color: var(--gold); }
+  .person-header {
+    display: flex;
+    align-items: center;
+    padding: 13px 15px;
+    cursor: pointer;
+    gap: 12px;
+  }
+  .person-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 2px solid var(--border);
+  }
+  .person-info { flex: 1; min-width: 0; }
+  .person-name {
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .person-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .person-balance {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .person-balance.positive { color: var(--green); }
+  .person-balance.negative { color: var(--red); }
+  .person-balance.zero { color: var(--muted); }
+
+  .person-detail {
+    display: none;
+    padding: 0 15px 15px;
+    border-top: 1px solid var(--border);
+  }
+  .person-card.expanded .person-detail { display: block; }
+
+  .detail-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 0 10px;
+  }
+  .dstat {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .dstat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; }
+  .dstat-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .dstat-val.green { color: var(--green); }
+  .dstat-val.red { color: var(--red); }
+
+  .dtx-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .dtx-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .dtx-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dtx-dot.sent { background: var(--red); }
+  .dtx-dot.received { background: var(--green); }
+  .dtx-info { flex: 1; min-width: 0; }
+  .dtx-desc { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dtx-date { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 1px; }
+  .dtx-amount { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .dtx-amount.sent { color: var(--red); }
+  .dtx-amount.received { color: var(--green); }
+  .dtx-del { background: none; border: none; color: rgba(232,228,220,0.2); cursor: pointer; font-size: 13px; padding: 2px 4px; }
+  .dtx-del:active { color: var(--red); }
+
+  .d-action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 2px; }
+  .d-btn-tx {
+    border: none;
+    border-radius: 8px;
+    padding: 9px 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .d-btn-tx:active { opacity: 0.7; }
+  .d-btn-tx.sent { background: rgba(224,92,106,0.15); color: var(--red); border: 1px solid rgba(224,92,106,0.3); }
+  .d-btn-tx.received { background: rgba(78,204,163,0.15); color: var(--green); border: 1px solid rgba(78,204,163,0.3); }
+  .d-btn-delete {
+    width: 100%; background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px;
+    color: rgba(232,228,220,0.25);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; cursor: pointer;
+    margin-top: 8px; letter-spacing: 0.3px;
+    transition: all 0.2s;
+  }
+  .d-btn-delete:active { border-color: var(--red); color: var(--red); }
+
+  .d-badge {
+    font-size: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-left: 6px;
+  }
+  .no-dtx { font-size: 12px; color: rgba(232,228,220,0.2); text-align: center; padding: 10px 0; }
+
+  .d-empty { text-align: center; padding: 40px 20px; color: rgba(232,228,220,0.2); }
+  .d-empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .d-empty-text { font-size: 13px; }
+
+  /* FAB */
+  .fab {
+    position: fixed;
+    bottom: calc(var(--nav-h) + 16px);
+    right: 22px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #0a0d14;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 24px rgba(201,168,76,0.4);
+    font-weight: 300;
+    transition: transform 0.2s;
+    z-index: 200;
+  }
+  .fab:active { transform: scale(0.92); }
+  .fab.rotated { transform: rotate(45deg); }
+
+  /* Modals / overlays */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.72);
+    z-index: 400;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .overlay.active { display: flex; }
+  .modal {
+    background: #141822;
+    border-radius: 22px 22px 0 0;
+    padding: 22px 20px 44px;
+    width: 100%;
+    max-width: 500px;
+    border-top: 1px solid rgba(201,168,76,0.2);
+    animation: slideUp 0.25s ease;
+  }
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+  }
+  .modal-close {
+    margin-left: auto;
+    background: var(--surface);
+    border: none;
+    color: var(--muted);
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .field-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 5px;
+    margin-top: 13px;
+  }
+  .field-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 13px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: var(--gold); }
+  .d-type-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .d-type-btn {
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .d-type-btn.active.sent { background: rgba(224,92,106,0.15); color: var(--red); border-color: rgba(224,92,106,0.4); }
+  .d-type-btn.active.received { background: rgba(78,204,163,0.15); color: var(--green); border-color: rgba(78,204,163,0.4); }
+  .btn-submit {
+    width: 100%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 18px;
+    transition: opacity 0.15s;
+  }
+  .btn-submit:active { opacity: 0.8; }
+  /* ══════════════════════════════
+     FIRMA SCREEN
+  ══════════════════════════════ */
+  .firma-header {
+    padding: 28px 24px 0;
+    background: rgba(10,13,20,0.97);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 10;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .firma-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: var(--gold); letter-spacing: -0.5px;
+    margin-bottom: 14px;
+  }
+  .firma-title span { color: var(--text); font-weight: 400; }
+
+  .firma-tabs {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ftab {
+    flex: 1; padding: 11px 8px;
+    border: none; background: none;
+    color: var(--muted); font-size: 0.82rem;
+    font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .ftab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  .fview { display: none; padding: 16px 24px; }
+  .fview.active { display: block; }
+
+  .firma-summary-row {
+    display: flex; gap: 10px;
+    margin-bottom: 18px;
+  }
+  .rpill {
+    flex: 1; border-radius: 14px; padding: 14px 12px;
+    text-align: center; border: 1px solid var(--border);
+  }
+  .rpill-urgent { background: rgba(224,92,106,0.08); border-color: rgba(224,92,106,0.2); }
+  .rpill-ok { background: rgba(78,204,163,0.08); border-color: rgba(78,204,163,0.2); }
+  .rpill-total { background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.2); }
+  .rpill-val { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 500; color: var(--text); }
+  .rpill-urgent .rpill-val { color: var(--red); }
+  .rpill-ok .rpill-val { color: var(--green); }
+  .rpill-total .rpill-val { color: var(--gold); }
+  .rpill-lbl { font-size: 0.62rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px; }
+
+  .firma-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem; color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  /* Reminder cards */
+  .reminder-list, .angajat-list { display: flex; flex-direction: column; gap: 10px; }
+  .reminder-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 13px;
+    transition: border-color 0.2s;
+  }
+  .reminder-card.due { border-color: rgba(224,92,106,0.4); }
+  .reminder-card.paid { border-color: rgba(78,204,163,0.25); opacity: 0.7; }
+  .rem-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0; background: var(--surface);
+  }
+  .rem-info { flex: 1; min-width: 0; }
+  .rem-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+  .rem-meta { font-size: 0.7rem; color: var(--muted); margin-top: 3px; }
+  .rem-amount { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 500; color: var(--text); flex-shrink: 0; text-align: right; }
+  .rem-due-badge {
+    font-size: 0.65rem; padding: 2px 7px; border-radius: 20px;
+    font-weight: 600; margin-top: 4px; display: inline-block;
+  }
+  .rem-due-badge.urgent { background: rgba(224,92,106,0.15); color: var(--red); }
+  .rem-due-badge.soon { background: rgba(245,197,66,0.15); color: var(--yellow); }
+  .rem-due-badge.ok { background: rgba(78,204,163,0.12); color: var(--green); }
+  .rem-due-badge.paid-badge { background: rgba(78,204,163,0.1); color: var(--green); }
+
+  .rem-actions { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; flex-shrink: 0; }
+  .rem-pay-btn {
+    font-size: 0.7rem; font-weight: 600; padding: 5px 10px;
+    border-radius: 8px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: opacity 0.15s;
+  }
+  .rem-pay-btn.mark-paid { background: rgba(78,204,163,0.15); color: var(--green); border: 1px solid rgba(78,204,163,0.3); }
+  .rem-pay-btn.mark-unpaid { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+  .rem-del-btn { background: none; border: none; color: rgba(232,228,220,0.2); cursor: pointer; font-size: 13px; }
+  .rem-del-btn:active { color: var(--red); }
+
+  /* Angajat cards */
+  .angajat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .angajat-card.expanded { border-color: var(--gold); }
+  .ang-header {
+    display: flex; align-items: center;
+    padding: 13px 15px; cursor: pointer; gap: 12px;
+  }
+  .ang-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+    background: var(--surface); border: 2px solid var(--border);
+  }
+  .ang-info { flex: 1; min-width: 0; }
+  .ang-name { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+  .ang-sub { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+  .ang-total { text-align: right; flex-shrink: 0; }
+  .ang-total-val { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--gold); font-weight: 500; }
+  .ang-total-lbl { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+
+  .ang-detail {
+    display: none; padding: 0 15px 15px;
+    border-top: 1px solid var(--border);
+  }
+  .angajat-card.expanded .ang-detail { display: block; }
+
+  .ang-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 0 10px; }
+  .ang-stat { background: var(--surface); border-radius: 8px; padding: 8px 10px; }
+  .ang-stat-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; }
+  .ang-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .ang-stat-val.gold { color: var(--gold); }
+  .ang-stat-val.red { color: var(--red); }
+
+  .ang-plati { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .ang-plata-item {
+    display: flex; align-items: center; gap: 9px;
+    background: var(--surface); border-radius: 8px; padding: 8px 10px;
+  }
+  .ang-plata-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .ang-plata-dot.salariu { background: var(--gold); }
+  .ang-plata-dot.avans { background: var(--red); }
+  .ang-plata-info { flex: 1; min-width: 0; }
+  .ang-plata-desc { font-size: 12px; color: var(--text); }
+  .ang-plata-date { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 1px; }
+  .ang-plata-sum { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .ang-plata-sum.salariu { color: var(--gold); }
+  .ang-plata-sum.avans { color: var(--red); }
+  .ang-plata-del { background: none; border: none; color: rgba(232,228,220,0.2); cursor: pointer; font-size: 12px; padding: 2px 4px; }
+  .ang-plata-del:active { color: var(--red); }
+
+  .ang-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .ang-btn {
+    border: none; border-radius: 8px; padding: 9px 0;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .ang-btn.salariu { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+  .ang-btn.avans { background: rgba(224,92,106,0.15); color: var(--red); border: 1px solid rgba(224,92,106,0.3); }
+  .ang-btn-del {
+    width: 100%; background: none; border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px; color: rgba(232,228,220,0.25);
+    font-family: 'DM Sans', sans-serif; font-size: 11px; cursor: pointer;
+    margin-top: 8px; transition: all 0.2s;
+  }
+  .ang-btn-del:active { border-color: var(--red); color: var(--red); }
+
+  .f-empty { text-align: center; padding: 36px 20px; color: rgba(232,228,220,0.2); }
+  .f-empty span { font-size: 2rem; display: block; margin-bottom: 8px; }
+  .f-empty p { font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ -->
+<!-- PORTOFEL SCREEN               -->
+<!-- ══════════════════════════════ -->
+<div class="screen active" id="screen-wallet">
+
+  <div class="wallet-header">
+    <div class="logo">Portofeli<span>ul</span></div>
+    <div class="date-badge" id="dateBadge">—</div>
+  </div>
+
+  <div class="balance-section">
+    <div class="balance-card">
+      <div class="balance-label">Sold curent</div>
+      <div class="balance-amount">
+        <span class="currency">RON</span>
+        <span id="totalBalance">0.00</span>
+      </div>
+      <div class="balance-stats">
+        <div class="stat-pill">
+          <div class="stat-icon in">↑</div>
+          <div class="stat-info">
+            <div class="stat-sub">Venituri</div>
+            <div class="stat-val in" id="totalIncome">0.00</div>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-icon out">↓</div>
+          <div class="stat-info">
+            <div class="stat-sub">Cheltuieli</div>
+            <div class="stat-val out" id="totalExpense">0.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wallet-tabs">
+    <button class="wtab active" onclick="switchWTab('tranzactii',this)">Tranzacții</button>
+    <button class="wtab" onclick="switchWTab('categorii',this)">Categorii</button>
+    <button class="wtab" onclick="switchWTab('raport',this)">Raport</button>
+  </div>
+
+  <!-- TRANZACȚII VIEW -->
+  <div class="wview active section" id="wview-tranzactii">
+    <div class="add-form" id="addForm">
+      <div class="w-type-toggle">
+        <button class="w-type-btn income active" id="btnIncome" onclick="wSetType('income')">↑ Venit</button>
+        <button class="w-type-btn expense" id="btnExpense" onclick="wSetType('expense')">↓ Cheltuială</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Descriere</label>
+          <input type="text" id="inputDesc" placeholder="ex: Salariu..." />
+        </div>
+        <div class="form-group">
+          <label>Sumă (RON)</label>
+          <input type="number" id="inputAmount" placeholder="0.00" step="0.01" min="0" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Categorie</label>
+          <select id="inputCategory">
+            <option value="💰 Salariu">💰 Salariu</option>
+            <option value="🍔 Mâncare">🍔 Mâncare</option>
+            <option value="🚗 Transport">🚗 Transport</option>
+            <option value="🏠 Locuință">🏠 Locuință</option>
+            <option value="💊 Sănătate">💊 Sănătate</option>
+            <option value="🎮 Divertisment">🎮 Divertisment</option>
+            <option value="👗 Haine">👗 Haine</option>
+            <option value="📚 Educație">📚 Educație</option>
+            <option value="🎁 Cadou">🎁 Cadou</option>
+            <option value="💡 Utilități">💡 Utilități</option>
+            <option value="📱 Abonamente">📱 Abonamente</option>
+            <option value="✈️ Vacanță">✈️ Vacanță</option>
+            <option value="🏋️ Sport">🏋️ Sport</option>
+            <option value="🐾 Animale">🐾 Animale</option>
+            <option value="🔧 Diverse">🔧 Diverse</option>
+            <option value="🤝 Datorii">🤝 Datorii</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" id="inputDate" />
+        </div>
+      </div>
+      <button class="btn-add-w" onclick="wAddTransaction()">Adaugă tranzacție</button>
+    </div>
+
+    <div class="section-title">
+      Istoric
+      <span onclick="wClearAll()">Șterge tot</span>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="wSetFilter('all',this)">Toate</button>
+      <button class="filter-chip" onclick="wSetFilter('income',this)">Venituri</button>
+      <button class="filter-chip" onclick="wSetFilter('expense',this)">Cheltuieli</button>
+    </div>
+
+    <div class="transactions-list" id="txList">
+      <div class="empty-state">
+        <span class="emoji">💸</span>
+        <p>Nicio tranzacție încă.<br>Apasă + pentru a adăuga.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORII VIEW -->
+  <div class="wview section" id="wview-categorii">
+    <div class="section-title">Pe categorii</div>
+    <div class="categories-grid" id="catGrid">
+      <div class="empty-state" style="grid-column:1/-1">
+        <span class="emoji">📊</span>
+        <p>Adaugă cheltuieli pentru<br>a vedea categoriile.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- RAPORT VIEW -->
+  <div class="wview section" id="wview-raport">
+    <div class="section-title">Rezumat lunar</div>
+    <div class="month-summary">
+      <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Ultimele 6 luni</div>
+      <div class="month-bars" id="monthBars">
+        <div class="bar-col"><div class="bar-fill" style="height:20%"></div><div class="bar-label">Oct</div></div>
+        <div class="bar-col"><div class="bar-fill" style="height:35%"></div><div class="bar-label">Nov</div></div>
+        <div class="bar-col"><div class="bar-fill" style="height:50%"></div><div class="bar-label">Dec</div></div>
+        <div class="bar-col"><div class="bar-fill" style="height:30%"></div><div class="bar-label">Ian</div></div>
+        <div class="bar-col"><div class="bar-fill" style="height:45%"></div><div class="bar-label">Feb</div></div>
+        <div class="bar-col current"><div class="bar-fill current" style="height:60%"></div><div class="bar-label">Mar</div></div>
+      </div>
+      <div class="summary-totals">
+        <div class="summary-item">
+          <div class="val" style="color:var(--green)" id="rIncome">0</div>
+          <div class="lbl">Venituri</div>
+        </div>
+        <div class="summary-item">
+          <div class="val" style="color:var(--red)" id="rExpense">0</div>
+          <div class="lbl">Cheltuieli</div>
+        </div>
+        <div class="summary-item">
+          <div class="val" id="rBalance">0</div>
+          <div class="lbl">Net</div>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-lbl">
+          <span>Rata de economisire</span>
+          <span id="savingsRate">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" id="savingsBar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:18px;">Top cheltuieli</div>
+    <div class="transactions-list" id="topExpenses">
+      <div class="empty-state"><span class="emoji">📉</span><p>Nicio cheltuială înregistrată.</p></div>
+    </div>
+  </div>
+
+</div><!-- end screen-wallet -->
+
+
+<!-- ══════════════════════════════ -->
+<!-- DATORII SCREEN                -->
+<!-- ══════════════════════════════ -->
+<div class="screen" id="screen-debts">
+
+  <div class="debts-header">
+    <div class="debts-title">Dato<span>rii</span></div>
+    <div class="debt-summary" id="debtSummaryBar">
+      <div class="dsum-box">
+        <div class="dsum-label">Am dat</div>
+        <div class="dsum-val red" id="sumSent">0 RON</div>
+      </div>
+      <div class="dsum-box">
+        <div class="dsum-label">Am primit</div>
+        <div class="dsum-val green" id="sumReceived">0 RON</div>
+      </div>
+      <div class="dsum-box">
+        <div class="dsum-label">Sold net</div>
+        <div class="dsum-val yellow" id="sumNet">0 RON</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="debt-search-wrap" style="padding-top:14px;">
+    <input class="debt-search" type="text" id="debtSearch" placeholder="🔍  Caută persoană..." oninput="renderPersons()">
+  </div>
+
+  <div class="persons-list" id="personsList"></div>
+
+</div><!-- end screen-debts -->
+
+
+<!-- FIRMA SCREEN -->
+<div class="screen" id="screen-firma">
+  <div class="firma-header">
+    <div class="firma-title">Fir<span>mă</span></div>
+    <div class="firma-tabs">
+      <button class="ftab active" id="ftab-remindere" onclick="switchFTab('remindere',this)">🔔 Remindere</button>
+      <button class="ftab" id="ftab-angajati" onclick="switchFTab('angajati',this)">👥 Angajați</button>
+    </div>
+  </div>
+
+  <div class="fview active" id="fview-remindere">
+    <div class="firma-summary-row">
+      <div class="rpill rpill-urgent"><div class="rpill-val" id="rCount">0</div><div class="rpill-lbl">Scadente</div></div>
+      <div class="rpill rpill-ok"><div class="rpill-val" id="rPaid">0</div><div class="rpill-lbl">Plătite</div></div>
+      <div class="rpill rpill-total"><div class="rpill-val" id="rTotal">0 RON</div><div class="rpill-lbl">Total lunar</div></div>
+    </div>
+    <div class="firma-section-title">Plăți recurente</div>
+    <div class="reminder-list" id="reminderList"><div class="f-empty"><span>🔔</span><p>Niciun reminder adăugat.</p></div></div>
+  </div>
+
+  <div class="fview" id="fview-angajati">
+    <div class="firma-summary-row">
+      <div class="rpill rpill-total"><div class="rpill-val" id="angTotal">0 RON</div><div class="rpill-lbl">Salarii plătite</div></div>
+      <div class="rpill rpill-urgent"><div class="rpill-val" id="angAvans">0 RON</div><div class="rpill-lbl">Avansuri active</div></div>
+    </div>
+    <div class="firma-section-title">Angajați</div>
+    <div class="angajat-list" id="angajatList"><div class="f-empty"><span>👥</span><p>Niciun angajat adăugat.</p></div></div>
+  </div>
+</div><!-- end screen-firma -->
+
+
+<!-- ══════════════════════════════ -->
+<!-- BOTTOM NAVIGATION             -->
+<!-- ══════════════════════════════ -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-wallet" onclick="switchScreen('wallet')">
+    <span class="nav-icon">💰</span>
+    <span class="nav-label">Portofel</span>
+  </button>
+  <div class="nav-divider"></div>
+  <button class="nav-btn" id="nav-debts" onclick="switchScreen('debts')">
+    <span class="nav-icon">🤝</span>
+    <span class="nav-label">Datorii</span>
+  </button>
+  <div class="nav-divider"></div>
+  <button class="nav-btn" id="nav-firma" onclick="switchScreen('firma')">
+    <span class="nav-icon">🏢</span>
+    <span class="nav-label">Firmă</span>
+  </button>
+</nav>
+
+<!-- FAB -->
+<button class="fab" id="mainFab" onclick="handleFab()">+</button>
+
+
+<!-- MODAL: Adaugă persoană (datorii) -->
+<div class="overlay" id="addPersonOverlay" onclick="closeOverlay(event,'addPersonOverlay')">
+  <div class="modal">
+    <div class="modal-title">
+      👤 Persoană nouă
+      <button class="modal-close" onclick="closeModal('addPersonOverlay')">✕</button>
+    </div>
+    <div class="field-label">Nume</div>
+    <input class="field-input" id="personName" type="text" placeholder="ex: Andrei M.">
+    <div class="field-label">Notă (opțional)</div>
+    <input class="field-input" id="personNote" type="text" placeholder="ex: prieten, coleg...">
+    <button class="btn-submit" onclick="addPerson()">Adaugă</button>
+  </div>
+</div>
+
+<!-- MODAL: Adaugă tranzacție (datorii) -->
+<div class="overlay" id="addTxOverlay" onclick="closeOverlay(event,'addTxOverlay')">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="txModalTitle">Adaugă tranzacție</span>
+      <button class="modal-close" onclick="closeModal('addTxOverlay')">✕</button>
+    </div>
+    <div class="field-label">Tip</div>
+    <div class="d-type-toggle">
+      <button class="d-type-btn sent active" id="dTypeSent" onclick="dSetTxType('sent')">↑ Am dat</button>
+      <button class="d-type-btn received" id="dTypeReceived" onclick="dSetTxType('received')">↓ Am primit</button>
+    </div>
+    <div class="field-label">Sumă (RON)</div>
+    <input class="field-input" id="txAmount" type="number" min="0" step="0.01" placeholder="0.00">
+    <div class="field-label">Descriere (opțional)</div>
+    <input class="field-input" id="txDesc" type="text" placeholder="ex: bani de benzina...">
+    <div class="field-label">Data</div>
+    <input class="field-input" id="txDate" type="date">
+    <button class="btn-submit" onclick="addDebtTransaction()">Salvează</button>
+  </div>
+</div>
+
+
+<!-- MODAL: Adaugă Reminder -->
+<div class="overlay" id="addReminderOverlay" onclick="closeOverlay(event,'addReminderOverlay')">
+  <div class="modal">
+    <div class="modal-title">🔔 Reminder nou <button class="modal-close" onclick="closeModal('addReminderOverlay')">✕</button></div>
+    <div class="field-label">Denumire</div>
+    <input class="field-input" id="remName" type="text" placeholder="ex: Chirie, Curent, Gaz...">
+    <div class="field-label">Sumă (RON)</div>
+    <input class="field-input" id="remAmount" type="number" min="0" step="0.01" placeholder="0.00">
+    <div class="field-label">Zi scadentă (în fiecare lună)</div>
+    <input class="field-input" id="remDay" type="number" min="1" max="31" placeholder="ex: 15">
+    <div class="field-label">Categorie</div>
+    <select class="field-input" id="remCat">
+      <option value="🏠 Chirie">🏠 Chirie</option>
+      <option value="💡 Curent">💡 Curent</option>
+      <option value="💧 Apă">💧 Apă</option>
+      <option value="🔥 Gaz">🔥 Gaz</option>
+      <option value="📱 Internet/Tel">📱 Internet/Tel</option>
+      <option value="🗑️ Salubritate">🗑️ Salubritate</option>
+      <option value="🔧 Alte utilități">🔧 Alte utilități</option>
+    </select>
+    <button class="btn-submit" onclick="addReminder()">Adaugă</button>
+  </div>
+</div>
+
+<!-- MODAL: Adaugă Angajat -->
+<div class="overlay" id="addAngajatOverlay" onclick="closeOverlay(event,'addAngajatOverlay')">
+  <div class="modal">
+    <div class="modal-title">👤 Angajat nou <button class="modal-close" onclick="closeModal('addAngajatOverlay')">✕</button></div>
+    <div class="field-label">Nume</div>
+    <input class="field-input" id="angNume" type="text" placeholder="ex: Ion Popescu">
+    <div class="field-label">Salariu de bază (RON)</div>
+    <input class="field-input" id="angSalariu" type="number" min="0" step="0.01" placeholder="0.00">
+    <div class="field-label">Funcție (opțional)</div>
+    <input class="field-input" id="angFunctie" type="text" placeholder="ex: Vânzător, Mecanic...">
+    <button class="btn-submit" onclick="addAngajat()">Adaugă</button>
+  </div>
+</div>
+
+<!-- MODAL: Plată angajat -->
+<div class="overlay" id="angPlataOverlay" onclick="closeOverlay(event,'angPlataOverlay')">
+  <div class="modal">
+    <div class="modal-title"><span id="angPlataTitle">Plată</span> <button class="modal-close" onclick="closeModal('angPlataOverlay')">✕</button></div>
+    <div class="field-label">Tip plată</div>
+    <div class="d-type-toggle">
+      <button class="d-type-btn sent active" id="angTipSalariu" onclick="angSetTip('salariu')">💰 Salariu</button>
+      <button class="d-type-btn received" id="angTipAvans" onclick="angSetTip('avans')">⚡ Avans</button>
+    </div>
+    <div class="field-label">Sumă (RON)</div>
+    <input class="field-input" id="angPlataSum" type="number" min="0" step="0.01" placeholder="0.00">
+    <div class="field-label">Notă (opțional)</div>
+    <input class="field-input" id="angPlataNota" type="text" placeholder="ex: Salariu mai, avans weekend...">
+    <div class="field-label">Data</div>
+    <input class="field-input" id="angPlataData" type="date">
+    <button class="btn-submit" onclick="saveAngajatPlata()">Salvează</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════ */
+let currentScreen = 'wallet';
+
+function switchScreen(name) {
+  currentScreen = name;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+
+  if (name !== 'wallet' && wFormOpen) {
+    wFormOpen = false;
+    document.getElementById('addForm').classList.remove('visible');
+    document.getElementById('mainFab').classList.remove('rotated');
+  }
+
+  if (name === 'debts') renderPersons();
+  if (name === 'firma') renderFirma();
+}
+
+function handleFab() {
+  if (currentScreen === 'wallet') wToggleForm();
+  else if (currentScreen === 'debts') openAddPerson();
+  else if (currentScreen === 'firma') {
+    const tab = document.querySelector('.ftab.active');
+    if (tab && tab.id === 'ftab-angajati') openAddAngajat();
+    else openAddReminder();
+  }
+}
+
+
+/* ══════════════════════════════════════
+   PORTOFEL LOGIC
+══════════════════════════════════════ */
+let wTransactions = JSON.parse(localStorage.getItem('ptx') || '[]');
+let wCurrentType = 'income';
+let wCurrentFilter = 'all';
+let wFormOpen = false;
+
+const today = new Date();
+document.getElementById('dateBadge').textContent = today.toLocaleDateString('ro-RO', {day:'numeric', month:'long', year:'numeric'});
+document.getElementById('inputDate').valueAsDate = today;
+
+function wFmt(n) {
+  return Number(n).toLocaleString('ro-RO', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function wSetType(t) {
+  wCurrentType = t;
+  document.getElementById('btnIncome').classList.toggle('active', t === 'income');
+  document.getElementById('btnExpense').classList.toggle('active', t === 'expense');
+  document.getElementById('inputCategory').value = t === 'income' ? '💰 Salariu' : '🍔 Mâncare';
+}
+
+function wToggleForm() {
+  wFormOpen = !wFormOpen;
+  document.getElementById('addForm').classList.toggle('visible', wFormOpen);
+  document.getElementById('mainFab').classList.toggle('rotated', wFormOpen);
+  if (!wFormOpen) switchWTab('tranzactii', document.querySelector('.wtab'));
+  else switchWTab('tranzactii', document.querySelector('.wtab'));
+}
+
+function switchWTab(name, el) {
+  document.querySelectorAll('.wview').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.wtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('wview-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  else {
+    const tabs = document.querySelectorAll('.wtab');
+    const idx = ['tranzactii','categorii','raport'].indexOf(name);
+    if (tabs[idx]) tabs[idx].classList.add('active');
+  }
+  if (name !== 'tranzactii' && wFormOpen) {
+    wFormOpen = false;
+    document.getElementById('addForm').classList.remove('visible');
+    document.getElementById('mainFab').classList.remove('rotated');
+  }
+  if (name === 'categorii') wRenderCategories();
+  if (name === 'raport') wRenderReport();
+}
+
+function wSetFilter(f, el) {
+  wCurrentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  wRenderTransactions();
+}
+
+function wAddTransaction() {
+  const desc = document.getElementById('inputDesc').value.trim();
+  const amount = parseFloat(document.getElementById('inputAmount').value);
+  const cat = document.getElementById('inputCategory').value;
+  const date = document.getElementById('inputDate').value;
+  if (!desc || isNaN(amount) || amount <= 0) return;
+  wTransactions.unshift({ id: Date.now(), desc, amount, cat, type: wCurrentType, date: date || today.toISOString().split('T')[0] });
+  wSave();
+  wRenderTransactions();
+  wUpdateBalance();
+  document.getElementById('inputDesc').value = '';
+  document.getElementById('inputAmount').value = '';
+}
+
+function wDeleteTransaction(id) {
+  wTransactions = wTransactions.filter(t => t.id !== id);
+  wSave();
+  wRenderTransactions();
+  wUpdateBalance();
+}
+
+function wClearAll() {
+  if (confirm('Ștergi toate tranzacțiile?')) {
+    wTransactions = [];
+    wSave();
+    wRenderTransactions();
+    wUpdateBalance();
+  }
+}
+
+function wSave() { localStorage.setItem('ptx', JSON.stringify(wTransactions)); }
+
+function wUpdateBalance() {
+  const income = wTransactions.filter(t => t.type === 'income').reduce((a,b) => a + b.amount, 0);
+  const expense = wTransactions.filter(t => t.type === 'expense').reduce((a,b) => a + b.amount, 0);
+  const bal = income - expense;
+  document.getElementById('totalBalance').textContent = wFmt(bal);
+  document.getElementById('totalIncome').textContent = wFmt(income);
+  document.getElementById('totalExpense').textContent = wFmt(expense);
+  document.getElementById('rIncome').textContent = wFmt(income) + ' RON';
+  document.getElementById('rExpense').textContent = wFmt(expense) + ' RON';
+  document.getElementById('rBalance').textContent = wFmt(bal) + ' RON';
+  document.getElementById('rBalance').style.color = bal >= 0 ? 'var(--green)' : 'var(--red)';
+  const rate = income > 0 ? Math.max(0, Math.min(100, ((income - expense) / income) * 100)) : 0;
+  document.getElementById('savingsRate').textContent = rate.toFixed(0) + '%';
+  document.getElementById('savingsBar').style.width = rate + '%';
+}
+
+function wRenderTransactions() {
+  const list = document.getElementById('txList');
+  let filtered = wTransactions;
+  if (wCurrentFilter !== 'all') filtered = wTransactions.filter(t => t.type === wCurrentFilter);
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><span class="emoji">💸</span><p>Nicio tranzacție.<br>Apasă + pentru a adăuga.</p></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(tx => {
+    const d = new Date(tx.date);
+    const dateStr = d.toLocaleDateString('ro-RO', {day:'numeric', month:'short'});
+    const sign = tx.type === 'income' ? '+' : '−';
+    const catIcon = tx.cat.split(' ')[0];
+    return `
+      <div class="tx-item">
+        <div class="tx-icon ${tx.type}">${catIcon}</div>
+        <div class="tx-info">
+          <div class="tx-name">${tx.desc}</div>
+          <div class="tx-meta">${tx.cat.split(' ').slice(1).join(' ')} · ${dateStr}</div>
+        </div>
+        <div class="tx-amount ${tx.type}">${sign} ${wFmt(tx.amount)}</div>
+        <button class="tx-delete" onclick="wDeleteTransaction(${tx.id})">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function wRenderCategories() {
+  const expenses = wTransactions.filter(t => t.type === 'expense');
+  const totals = {};
+  expenses.forEach(t => { totals[t.cat] = (totals[t.cat] || 0) + t.amount; });
+  const entries = Object.entries(totals).sort((a,b) => b[1]-a[1]);
+  const max = entries.length ? entries[0][1] : 1;
+  const grid = document.getElementById('catGrid');
+  if (!entries.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><span class="emoji">📊</span><p>Adaugă cheltuieli pentru<br>a vedea categoriile.</p></div>`;
+    return;
+  }
+  grid.innerHTML = entries.map(([cat, amt]) => {
+    const pct = (amt / max) * 100;
+    const icon = cat.split(' ')[0];
+    const name = cat.split(' ').slice(1).join(' ');
+    return `
+      <div class="cat-card">
+        <div class="cat-card-top"><span class="cat-name">${name}</span><span class="cat-icon">${icon}</span></div>
+        <div class="cat-amount">${wFmt(amt)} RON</div>
+        <div class="cat-bar-track"><div class="cat-bar" style="width:${pct}%"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function wRenderReport() {
+  const expenses = wTransactions.filter(t => t.type === 'expense').sort((a,b) => b.amount - a.amount).slice(0,5);
+  const top = document.getElementById('topExpenses');
+  if (!expenses.length) {
+    top.innerHTML = `<div class="empty-state"><span class="emoji">📉</span><p>Nicio cheltuială înregistrată.</p></div>`;
+    return;
+  }
+  top.innerHTML = expenses.map(tx => {
+    const catIcon = tx.cat.split(' ')[0];
+    return `
+      <div class="tx-item">
+        <div class="tx-icon expense">${catIcon}</div>
+        <div class="tx-info">
+          <div class="tx-name">${tx.desc}</div>
+          <div class="tx-meta">${tx.cat.split(' ').slice(1).join(' ')}</div>
+        </div>
+        <div class="tx-amount expense">− ${wFmt(tx.amount)} RON</div>
+      </div>
+    `;
+  }).join('');
+}
+
+
+/* ══════════════════════════════════════
+   DATORII LOGIC
+══════════════════════════════════════ */
+let dData = JSON.parse(localStorage.getItem('datorii_v2') || '{"persons":[]}');
+let dCurrentPersonId = null;
+let dCurrentTxType = 'sent';
+
+function dSave() { localStorage.setItem('datorii_v2', JSON.stringify(dData)); }
+
+function dFmtRon(val) {
+  return (val % 1 === 0 ? val.toFixed(0) : val.toFixed(2)) + ' RON';
+}
+
+function dCalcBalance(person) {
+  let sent = 0, received = 0;
+  person.transactions.forEach(t => {
+    if (t.type === 'sent') sent += t.amount;
+    else received += t.amount;
+  });
+  return { sent, received, net: received - sent };
+}
+
+function dUpdateSummary() {
+  let totalSent = 0, totalReceived = 0;
+  dData.persons.forEach(p => {
+    const b = dCalcBalance(p);
+    totalSent += b.sent;
+    totalReceived += b.received;
+  });
+  const net = totalReceived - totalSent;
+  document.getElementById('sumSent').textContent = dFmtRon(totalSent);
+  document.getElementById('sumReceived').textContent = dFmtRon(totalReceived);
+  const netEl = document.getElementById('sumNet');
+  netEl.textContent = dFmtRon(Math.abs(net));
+  netEl.className = 'dsum-val ' + (net > 0 ? 'green' : net < 0 ? 'red' : 'yellow');
+}
+
+function dStringToColor(str) {
+  const colors = ['#c9a84c','#ff7eb3','#7ec8e3','#a78bfa','#34d399','#fb923c','#f472b6','#60a5fa'];
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+  return colors[Math.abs(h) % colors.length];
+}
+
+function renderPersons() {
+  const q = document.getElementById('debtSearch').value.toLowerCase();
+  const list = document.getElementById('personsList');
+  const filtered = dData.persons.filter(p => p.name.toLowerCase().includes(q));
+
+  dUpdateSummary();
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="d-empty"><div class="d-empty-icon">👥</div><div class="d-empty-text">${dData.persons.length === 0 ? 'Nicio persoană adăugată.<br>Apasă + pentru a începe.' : 'Nicio persoană găsită.'}</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(p => {
+    const b = dCalcBalance(p);
+    const netClass = b.net > 0 ? 'positive' : b.net < 0 ? 'negative' : 'zero';
+    const netLabel = b.net > 0 ? `+${dFmtRon(b.net)}` : b.net < 0 ? `-${dFmtRon(Math.abs(b.net))}` : '0 RON';
+    const netDesc = b.net > 0 ? 'are de dat' : b.net < 0 ? 'am de dat' : 'chit';
+    const initials = p.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+    const isExpanded = p.expanded ? 'expanded' : '';
+    const avatarColor = dStringToColor(p.name);
+
+    const txRows = p.transactions.slice().reverse().map(t => `
+      <div class="dtx-item">
+        <div class="dtx-dot ${t.type}"></div>
+        <div class="dtx-info">
+          <div class="dtx-desc">${t.desc || (t.type === 'sent' ? 'Am dat' : 'Am primit')}</div>
+          <div class="dtx-date">${t.date}</div>
+        </div>
+        <div class="dtx-amount ${t.type}">${t.type === 'sent' ? '-' : '+'}${dFmtRon(t.amount)}</div>
+        <button class="dtx-del" onclick="dDeleteTx('${p.id}','${t.id}');event.stopPropagation()">🗑</button>
+      </div>
+    `).join('');
+
+    return `
+      <div class="person-card ${isExpanded}" id="dcard-${p.id}">
+        <div class="person-header" onclick="dTogglePerson('${p.id}')">
+          <div class="person-avatar" style="color:${avatarColor};border-color:${avatarColor}40">${initials}</div>
+          <div class="person-info">
+            <div class="person-name">${p.name}${p.note ? `<span class="d-badge">${p.note}</span>` : ''}</div>
+            <div class="person-sub">${p.transactions.length} tranzacții · ${netDesc}</div>
+          </div>
+          <div class="person-balance ${netClass}">${netLabel}</div>
+        </div>
+        <div class="person-detail">
+          <div class="detail-stats">
+            <div class="dstat"><div class="dstat-label">Am dat</div><div class="dstat-val red">${dFmtRon(b.sent)}</div></div>
+            <div class="dstat"><div class="dstat-label">Am primit</div><div class="dstat-val green">${dFmtRon(b.received)}</div></div>
+          </div>
+          <div class="dtx-list">${txRows || '<div class="no-dtx">Nicio tranzacție</div>'}</div>
+          <div class="d-action-row">
+            <button class="d-btn-tx sent" onclick="openAddTx('${p.id}','sent')">↑ Am dat</button>
+            <button class="d-btn-tx received" onclick="openAddTx('${p.id}','received')">↓ Am primit</button>
+          </div>
+          <button class="d-btn-delete" onclick="dDeletePerson('${p.id}')">Șterge persoana</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function dTogglePerson(id) {
+  const p = dData.persons.find(x => x.id === id);
+  p.expanded = !p.expanded;
+  dSave();
+  renderPersons();
+}
+
+function openAddPerson() {
+  document.getElementById('personName').value = '';
+  document.getElementById('personNote').value = '';
+  document.getElementById('addPersonOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('personName').focus(), 300);
+}
+
+function addPerson() {
+  const name = document.getElementById('personName').value.trim();
+  if (!name) return;
+  dData.persons.push({ id: Date.now().toString(), name, note: document.getElementById('personNote').value.trim(), transactions: [], expanded: false });
+  dSave();
+  closeModal('addPersonOverlay');
+  renderPersons();
+}
+
+function dDeletePerson(id) {
+  if (!confirm('Ștergi persoana și toate tranzacțiile?')) return;
+  dData.persons = dData.persons.filter(p => p.id !== id);
+  dSave();
+  renderPersons();
+}
+
+function openAddTx(personId, type) {
+  dCurrentPersonId = personId;
+  const p = dData.persons.find(x => x.id === personId);
+  document.getElementById('txModalTitle').textContent = p.name;
+  dSetTxType(type);
+  document.getElementById('txAmount').value = '';
+  document.getElementById('txDesc').value = '';
+  document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('addTxOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('txAmount').focus(), 300);
+}
+
+function dSetTxType(type) {
+  dCurrentTxType = type;
+  document.getElementById('dTypeSent').classList.toggle('active', type === 'sent');
+  document.getElementById('dTypeReceived').classList.toggle('active', type === 'received');
+}
+
+function addDebtTransaction() {
+  const amount = parseFloat(document.getElementById('txAmount').value);
+  if (!amount || amount <= 0) return;
+  const p = dData.persons.find(x => x.id === dCurrentPersonId);
+  const txId = Date.now().toString();
+  const desc = document.getElementById('txDesc').value.trim();
+  const date = document.getElementById('txDate').value;
+
+  p.transactions.push({ id: txId, type: dCurrentTxType, amount, desc, date });
+  dSave();
+
+  // ── SYNC cu portofelul ──
+  // "Am dat" = cheltuială din portofel (bani ieșiți)
+  // "Am primit" = venit în portofel (bani intrați)
+  const wType = dCurrentTxType === 'sent' ? 'expense' : 'income';
+  const wDesc = desc || (dCurrentTxType === 'sent' ? 'Am dat' : 'Am primit');
+  wTransactions.unshift({
+    id: 'debt_' + txId,   // prefix ca să știm că vine din datorii
+    desc: wDesc + ' — ' + p.name,
+    amount,
+    cat: dCurrentTxType === 'sent' ? '🤝 Datorii' : '🤝 Datorii',
+    type: wType,
+    date: date || new Date().toISOString().split('T')[0],
+    fromDebt: true
+  });
+  wSave();
+  wRenderTransactions();
+  wUpdateBalance();
+
+  closeModal('addTxOverlay');
+  renderPersons();
+}
+
+function dDeleteTx(personId, txId) {
+  const p = dData.persons.find(x => x.id === personId);
+  p.transactions = p.transactions.filter(t => t.id !== txId);
+  dSave();
+
+  // Șterge și din portofel tranzacția sincronizată
+  wTransactions = wTransactions.filter(t => t.id !== 'debt_' + txId);
+  wSave();
+  wRenderTransactions();
+  wUpdateBalance();
+
+  renderPersons();
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function closeOverlay(event, id) { if (event.target === document.getElementById(id)) closeModal(id); }
+
+// Enter keys
+document.getElementById('personName').addEventListener('keydown', e => { if (e.key === 'Enter') addPerson(); });
+document.getElementById('txAmount').addEventListener('keydown', e => { if (e.key === 'Enter') addDebtTransaction(); });
+document.getElementById('inputDesc').addEventListener('keydown', e => { if (e.key === 'Enter') wAddTransaction(); });
+
+/* ══════════════════════════════════════
+   FIRMA LOGIC
+══════════════════════════════════════ */
+let fData = JSON.parse(localStorage.getItem('firma_v1') || '{"reminders":[],"angajati":[]}');
+let currentAngajatId = null;
+let currentAngTip = 'salariu';
+
+function fSave() { localStorage.setItem('firma_v1', JSON.stringify(fData)); }
+
+function switchFTab(name, el) {
+  document.querySelectorAll('.fview').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  document.getElementById('fview-' + name).classList.add('active');
+  el.classList.add('active');
+  renderFirma();
+}
+
+function renderFirma() {
+  const activeTab = document.querySelector('.ftab.active');
+  if (!activeTab) return;
+  if (activeTab.id === 'ftab-remindere') renderReminders();
+  else renderAngajati();
+}
+
+/* ── REMINDERE ── */
+function openAddReminder() {
+  document.getElementById('remName').value = '';
+  document.getElementById('remAmount').value = '';
+  document.getElementById('remDay').value = '';
+  document.getElementById('addReminderOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('remName').focus(), 300);
+}
+
+function addReminder() {
+  const name = document.getElementById('remName').value.trim();
+  const amount = parseFloat(document.getElementById('remAmount').value);
+  const day = parseInt(document.getElementById('remDay').value);
+  if (!name || !amount || !day) return;
+  fData.reminders.push({
+    id: Date.now().toString(), name, amount, day,
+    cat: document.getElementById('remCat').value,
+    paidMonths: []
+  });
+  fSave();
+  closeModal('addReminderOverlay');
+  renderReminders();
+}
+
+function deleteReminder(id) {
+  fData.reminders = fData.reminders.filter(r => r.id !== id);
+  fSave();
+  renderReminders();
+}
+
+function toggleReminderPaid(id) {
+  const r = fData.reminders.find(x => x.id === id);
+  const key = monthKey();
+  if (r.paidMonths.includes(key)) {
+    r.paidMonths = r.paidMonths.filter(m => m !== key);
+  } else {
+    r.paidMonths.push(key);
+    // Sync cu portofelul ca cheltuiala
+    wTransactions.unshift({
+      id: 'rem_' + id + '_' + key,
+      desc: r.name,
+      amount: r.amount,
+      cat: r.cat,
+      type: 'expense',
+      date: new Date().toISOString().split('T')[0],
+      fromReminder: true
+    });
+    wSave();
+    wRenderTransactions();
+    wUpdateBalance();
+  }
+  fSave();
+  renderReminders();
+}
+
+function monthKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + (d.getMonth() + 1);
+}
+
+function renderReminders() {
+  const list = document.getElementById('reminderList');
+  const now = new Date();
+  const today2 = now.getDate();
+  const mk = monthKey();
+
+  if (!fData.reminders.length) {
+    list.innerHTML = '<div class="f-empty"><span>🔔</span><p>Niciun reminder adăugat.<br>Apasă + pentru a adăuga.</p></div>';
+    document.getElementById('rCount').textContent = '0';
+    document.getElementById('rPaid').textContent = '0';
+    document.getElementById('rTotal').textContent = '0 RON';
+    return;
+  }
+
+  let countDue = 0, countPaid = 0, totalLunar = 0;
+
+  list.innerHTML = fData.reminders.map(r => {
+    const isPaid = r.paidMonths.includes(mk);
+    const daysLeft = r.day - today2;
+    totalLunar += r.amount;
+    if (isPaid) countPaid++;
+    else if (daysLeft <= 0) countDue++;
+
+    let badgeClass = 'ok', badgeText = `Scade pe ${r.day}`;
+    if (isPaid) { badgeClass = 'paid-badge'; badgeText = 'Plătit ✓'; }
+    else if (daysLeft < 0) { badgeClass = 'urgent'; badgeText = `Expirat de ${Math.abs(daysLeft)} zile`; }
+    else if (daysLeft <= 5) { badgeClass = 'soon'; badgeText = `Scade în ${daysLeft} zile`; }
+
+    const cardClass = isPaid ? 'paid' : daysLeft <= 0 ? 'due' : '';
+    const icon = r.cat.split(' ')[0];
+
+    return `
+      <div class="reminder-card ${cardClass}">
+        <div class="rem-icon">${icon}</div>
+        <div class="rem-info">
+          <div class="rem-name">${r.name}</div>
+          <div class="rem-meta">${r.cat.split(' ').slice(1).join(' ')} · Zi ${r.day} a lunii</div>
+          <span class="rem-due-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="rem-actions">
+          <div class="rem-amount">${dFmtRon(r.amount)}</div>
+          <button class="rem-pay-btn ${isPaid ? 'mark-unpaid' : 'mark-paid'}" onclick="toggleReminderPaid('${r.id}')">
+            ${isPaid ? 'Anulează' : 'Marchează plătit'}
+          </button>
+          <button class="rem-del-btn" onclick="deleteReminder('${r.id}')">🗑</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('rCount').textContent = countDue;
+  document.getElementById('rPaid').textContent = countPaid;
+  document.getElementById('rTotal').textContent = dFmtRon(totalLunar);
+}
+
+/* ── ANGAJAȚI ── */
+function openAddAngajat() {
+  document.getElementById('angNume').value = '';
+  document.getElementById('angSalariu').value = '';
+  document.getElementById('angFunctie').value = '';
+  document.getElementById('addAngajatOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('angNume').focus(), 300);
+}
+
+function addAngajat() {
+  const name = document.getElementById('angNume').value.trim();
+  const salariu = parseFloat(document.getElementById('angSalariu').value);
+  if (!name || !salariu) return;
+  fData.angajati.push({
+    id: Date.now().toString(), name, salariu,
+    functie: document.getElementById('angFunctie').value.trim(),
+    plati: [], expanded: false
+  });
+  fSave();
+  closeModal('addAngajatOverlay');
+  renderAngajati();
+}
+
+function deleteAngajat(id) {
+  if (!confirm('Ștergi angajatul și toate plățile?')) return;
+  fData.angajati = fData.angajati.filter(a => a.id !== id);
+  fSave();
+  renderAngajati();
+}
+
+function toggleAngajat(id) {
+  const a = fData.angajati.find(x => x.id === id);
+  a.expanded = !a.expanded;
+  fSave();
+  renderAngajati();
+}
+
+function openAngajatPlata(id, tip) {
+  currentAngajatId = id;
+  currentAngTip = tip;
+  const a = fData.angajati.find(x => x.id === id);
+  document.getElementById('angPlataTitle').textContent = a.name;
+  angSetTip(tip);
+  document.getElementById('angPlataSum').value = tip === 'salariu' ? a.salariu : '';
+  document.getElementById('angPlataNota').value = '';
+  document.getElementById('angPlataData').value = new Date().toISOString().split('T')[0];
+  document.getElementById('angPlataOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('angPlataSum').focus(), 300);
+}
+
+function angSetTip(tip) {
+  currentAngTip = tip;
+  document.getElementById('angTipSalariu').classList.toggle('active', tip === 'salariu');
+  document.getElementById('angTipAvans').classList.toggle('active', tip === 'avans');
+}
+
+function saveAngajatPlata() {
+  const sum = parseFloat(document.getElementById('angPlataSum').value);
+  if (!sum || sum <= 0) return;
+  const a = fData.angajati.find(x => x.id === currentAngajatId);
+  const plataId = Date.now().toString();
+  const nota = document.getElementById('angPlataNota').value.trim();
+  const data = document.getElementById('angPlataData').value;
+
+  a.plati.push({ id: plataId, tip: currentAngTip, sum, nota, data });
+  fSave();
+
+  // Sync portofel — cheltuiala
+  wTransactions.unshift({
+    id: 'ang_' + plataId,
+    desc: (currentAngTip === 'salariu' ? 'Salariu' : 'Avans') + ' — ' + a.name + (nota ? ' (' + nota + ')' : ''),
+    amount: sum,
+    cat: '👥 Angajați',
+    type: 'expense',
+    date: data || new Date().toISOString().split('T')[0],
+    fromAngajat: true
+  });
+  wSave();
+  wRenderTransactions();
+  wUpdateBalance();
+
+  closeModal('angPlataOverlay');
+  renderAngajati();
+}
+
+function deleteAngajatPlata(angId, plataId) {
+  const a = fData.angajati.find(x => x.id === angId);
+  a.plati = a.plati.filter(p => p.id !== plataId);
+  fSave();
+  // Sync portofel
+  wTransactions = wTransactions.filter(t => t.id !== 'ang_' + plataId);
+  wSave();
+  wRenderTransactions();
+  wUpdateBalance();
+  renderAngajati();
+}
+
+function renderAngajati() {
+  const list = document.getElementById('angajatList');
+  if (!fData.angajati.length) {
+    list.innerHTML = '<div class="f-empty"><span>👥</span><p>Niciun angajat adăugat.<br>Apasă + pentru a adăuga.</p></div>';
+    document.getElementById('angTotal').textContent = '0 RON';
+    document.getElementById('angAvans').textContent = '0 RON';
+    return;
+  }
+
+  let totalSalarii = 0, totalAvansuri = 0;
+  fData.angajati.forEach(a => {
+    a.plati.forEach(p => {
+      if (p.tip === 'salariu') totalSalarii += p.sum;
+      else totalAvansuri += p.sum;
+    });
+  });
+  document.getElementById('angTotal').textContent = dFmtRon(totalSalarii);
+  document.getElementById('angAvans').textContent = dFmtRon(totalAvansuri);
+
+  list.innerHTML = fData.angajati.map(a => {
+    const totalPlati = a.plati.reduce((s, p) => s + p.sum, 0);
+    const totalAv = a.plati.filter(p => p.tip === 'avans').reduce((s, p) => s + p.sum, 0);
+    const totalSal = a.plati.filter(p => p.tip === 'salariu').reduce((s, p) => s + p.sum, 0);
+    const initials = a.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+    const color = dStringToColor(a.name);
+
+    const platiRows = a.plati.slice().reverse().map(p => `
+      <div class="ang-plata-item">
+        <div class="ang-plata-dot ${p.tip}"></div>
+        <div class="ang-plata-info">
+          <div class="ang-plata-desc">${p.tip === 'salariu' ? '💰 Salariu' : '⚡ Avans'}${p.nota ? ' · ' + p.nota : ''}</div>
+          <div class="ang-plata-date">${p.data}</div>
+        </div>
+        <div class="ang-plata-sum ${p.tip}">${dFmtRon(p.sum)}</div>
+        <button class="ang-plata-del" onclick="deleteAngajatPlata('${a.id}','${p.id}');event.stopPropagation()">🗑</button>
+      </div>
+    `).join('');
+
+    return `
+      <div class="angajat-card ${a.expanded ? 'expanded' : ''}" id="ang-${a.id}">
+        <div class="ang-header" onclick="toggleAngajat('${a.id}')">
+          <div class="ang-avatar" style="color:${color};border-color:${color}40">${initials}</div>
+          <div class="ang-info">
+            <div class="ang-name">${a.name}</div>
+            <div class="ang-sub">${a.functie || 'Angajat'} · ${a.plati.length} plăți</div>
+          </div>
+          <div class="ang-total">
+            <div class="ang-total-val">${dFmtRon(totalPlati)}</div>
+            <div class="ang-total-lbl">total primit</div>
+          </div>
+        </div>
+        <div class="ang-detail">
+          <div class="ang-stats">
+            <div class="ang-stat"><div class="ang-stat-lbl">Salarii</div><div class="ang-stat-val gold">${dFmtRon(totalSal)}</div></div>
+            <div class="ang-stat"><div class="ang-stat-lbl">Avansuri</div><div class="ang-stat-val red">${dFmtRon(totalAv)}</div></div>
+          </div>
+          <div class="ang-plati">${platiRows || '<div style="font-size:12px;color:rgba(232,228,220,0.2);text-align:center;padding:8px 0">Nicio plată înregistrată</div>'}</div>
+          <div class="ang-btn-row">
+            <button class="ang-btn salariu" onclick="openAngajatPlata('${a.id}','salariu')">💰 Salariu</button>
+            <button class="ang-btn avans" onclick="openAngajatPlata('${a.id}','avans')">⚡ Avans</button>
+          </div>
+          <button class="ang-btn-del" onclick="deleteAngajat('${a.id}')">Șterge angajatul</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('angPlataSum').addEventListener('keydown', e => { if (e.key === 'Enter') saveAngajatPlata(); });
+document.getElementById('remName').addEventListener('keydown', e => { if (e.key === 'Enter') addReminder(); });
+document.getElementById('angNume').addEventListener('keydown', e => { if (e.key === 'Enter') addAngajat(); });
+
+// INIT
+wRenderTransactions();
+wUpdateBalance();
+renderPersons();
+</script>
+
+<div style="
+  text-align:center;
+  padding: 18px 0 calc(var(--nav-h) + 18px);
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  color:rgba(232,228,220,0.2);
+  letter-spacing:0.8px;
+">
+  creat &amp; gândit de <span style="color:var(--gold);font-weight:600;">Voila Cristian</span>
+</div>
+
+</body>
+</html>
